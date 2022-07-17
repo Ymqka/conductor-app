@@ -1,0 +1,32 @@
+- hosts: localhost
+  connection: local
+  tasks:
+    - name: create build directory
+      file:
+        path: /tmp/dockerfile-build
+        state: directory
+        owner: root
+        group: root
+        mode: '0755'
+    - name: copy Dockerfile
+      copy:
+        src: ./Dockerfile
+        dest: /tmp/dockerfile-build/Dockerfile
+        owner: root
+        group: root
+        mode: '0644'
+    - name: build docker image
+      docker_image:
+        name: conductor-app:v1.0
+        build:
+          path: /tmp/dockerfile-build
+          source: build
+        state: present
+    - name: start docker container
+      docker_container:
+        image: conductor-app:v1.0
+        name: conductor-app
+        state: started
+        auto_remove: true
+        ports:
+          - "8080:80"
